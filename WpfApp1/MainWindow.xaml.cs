@@ -24,7 +24,8 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
-        IFaceServiceClient faceServiceClient = new FaceServiceClient("404062c4115f475cbf6bbd574ed35001");
+        IFaceServiceClient faceServiceClient = new FaceServiceClient("Subscription Key
+        ");
 
 
         
