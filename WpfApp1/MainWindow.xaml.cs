@@ -24,8 +24,7 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
-        IFaceServiceClient faceServiceClient = new FaceServiceClient("Subscription Key
-        ");
+        IFaceServiceClient faceServiceClient = new FaceServiceClient("Your Face Subscription Key");
 
 
         
@@ -33,25 +32,21 @@ namespace WpfApp1
         {
             InitializeComponent();
             webcam = new WebCam();
-             webcam.InitializeWebCam(ref captureImage);
+            webcam.InitializeWebCam(ref captureImage);
         }
 
-        string personGroupId = "meredost";
+        string personGroupId = "myFriendsGroup";
         WebCam webcam;
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Create an empty person group
-            // string personGroupId = "ncr13";
-            // await faceServiceClient.CreatePersonGroupAsync(personGroupId, "");
             bool groupExists = false;
             try
             {
-                //MainWindow.Log("Request: Group {0} will be used to build a person database. Checking whether the group exists.", GroupName);
                 Title = String.Format("Request: Group {0} will be used to build a person database. Checking whether the group exists.", personGroupId);
                 await faceServiceClient.GetPersonGroupAsync(personGroupId);
                 groupExists = true;
-                //MainWindow.Log("Response: Group {0} exists.", GroupName);
                 Title = String.Format("Response: Group {0} exists.", personGroupId);
 
             }
@@ -59,13 +54,11 @@ namespace WpfApp1
             {
                 if (ex.ErrorCode != "PersonGroupNotFound")
                 {
-                    //MainWindow.Log("Response: {0}. {1}", ex.ErrorCode, ex.ErrorMessage);
                     Title = String.Format("Response: {0}. {1}", ex.ErrorCode, ex.ErrorMessage);
                     return;
                 }
                 else
                 {
-                    // MainWindow.Log("Response: Group {0} did not exist previously.", GroupName);
                     Title = String.Format("Response: Group {0} did not exist previously.", personGroupId);
                 }
             }
@@ -83,157 +76,88 @@ namespace WpfApp1
                 }
             }
 
-            //MainWindow.Log("Request: Creating group \"{0}\"", GroupName);
-
             Title = String.Format("Request: Creating group \"{0}\"", personGroupId);
             try
             {
                 await faceServiceClient.CreatePersonGroupAsync(personGroupId, personGroupId);
-                // MainWindow.Log("Response: Success. Group \"{0}\" created", personGroupId);
                 Title = String.Format("Response: Success. Group \"{0}\" created", personGroupId);
             }
             catch (FaceAPIException ex)
             {
-                //MainWindow.Log("Response: {0}. {1}", ex.ErrorCode, ex.ErrorMessage);
                 Title = String.Format("Response: {0}. {1}", ex.ErrorCode, ex.ErrorMessage);
                 return;
             }
 
 
-            // Define Anna
+            // Define First Person
             CreatePersonResult friend1 = await faceServiceClient.CreatePersonAsync(
                 // Id of the person group that the person belonged to
                 personGroupId,
                 // Name of the person
-                "Anna"
+                "Toshif"
             );
 
-            // Define Toshif
+            // Define Second person 
             CreatePersonResult friend2 = await faceServiceClient.CreatePersonAsync(
                 // Id of the person group that the person belonged to
                 personGroupId,
                 // Name of the person
-                "Toshif"
+                "Jainab"
             );
 
-            // Define Clare
+            // Define Third person
             CreatePersonResult friend3 = await faceServiceClient.CreatePersonAsync(
                 // Id of the person group that the person belonged to
                 personGroupId,
                 // Name of the person
-                "Clare"
+                "Shakil"
             );
 
-            /*// Define Toshif
-            CreatePersonResult friend4 = await faceServiceClient.CreatePersonAsync(
-                // Id of the person group that the person belonged to
-                personGroupId,
-                // Name of the person
-                "Toshif"
-            );
-            */
 
 
-            // Directory contains image files of Anna
-            const string friend1ImageDir = @"D:\Pictures\MyBuddies\Anna\";
+            // Directory contains image files of Toshif
+            const string friend1ImageDir = @"D:\Pictures\MyBuddies\Toshif\";
 
             foreach (string imagePath in Directory.GetFiles(friend1ImageDir, "*.jpg"))
             {
                 using (Stream s = File.OpenRead(imagePath))
                 {
-                    // Detect faces in the image and add to Anna
+                    // Detect faces in the image and add to Toshif
                     await faceServiceClient.AddPersonFaceAsync(
                         personGroupId, friend1.PersonId, s);
                 }
             }
 
-            const string friend2ImageDir = @"D:\Pictures\MyBuddies\Toshif\";
+            const string friend2ImageDir = @"D:\Pictures\MyBuddies\Jainab\";
 
             foreach (string imagePath in Directory.GetFiles(friend2ImageDir, "*.jpg"))
             {
                 using (Stream s = File.OpenRead(imagePath))
                 {
-                    // Detect faces in the image and add to Bill
+                    // Detect faces in the image and add to Jainab
                     await faceServiceClient.AddPersonFaceAsync(
                         personGroupId, friend2.PersonId, s);
                 }
             }
 
-            const string friend3ImageDir = @"D:\Pictures\MyBuddies\Clare\";
+            const string friend3ImageDir = @"D:\Pictures\MyBuddies\Shakil\";
 
             foreach (string imagePath in Directory.GetFiles(friend3ImageDir, "*.jpg"))
             {
                 using (Stream s = File.OpenRead(imagePath))
                 {
-                    // Detect faces in the image and add to Clare
+                    // Detect faces in the image and add to Shakil
                     await faceServiceClient.AddPersonFaceAsync(
                         personGroupId, friend3.PersonId, s);
                 }
             }
 
-            /*const string friend4ImageDir = @"D:\Pictures\MyBuddies\Toshif\";
-
-            foreach (string imagePath in Directory.GetFiles(friend4ImageDir, "*.jpg"))
-            {
-                using (Stream s = File.OpenRead(imagePath))
-                {
-                    // Detect faces in the image and add to Toshif
-                    await faceServiceClient.AddPersonFaceAsync(
-                        personGroupId, friend4.PersonId, s);
-                }
-            }
-            */
-
             Title = String.Format("Success...Group Scaning Completed.");
 
         }
 
-        /*private async void Train(string personGroupId)
-        {
-            await faceServiceClient.TrainPersonGroupAsync(personGroupId);
-
-            TrainingStatus trainingStatus = null;
-            while (true)
-            {
-                trainingStatus = await faceServiceClient.GetPersonGroupTrainingStatusAsync(personGroupId);
-
-                if (trainingStatus.Status.ToString() != "running")
-                {
-                    break;
-                }
-
-                await Task.Delay(1000);
-            }
-
-            string testImageFile = @"D:\Pictures\detection2.jpg";
-
-            using (Stream s = File.OpenRead(testImageFile))
-            {
-                var faces = await faceServiceClient.DetectAsync(s);
-                var faceIds = faces.Select(face => face.FaceId).ToArray();
-
-                var results = await faceServiceClient.IdentifyAsync(personGroupId, faceIds);
-                foreach (var identifyResult in results)
-                {
-                    Console.WriteLine("Result of face: {0}", identifyResult.FaceId);
-                    if (identifyResult.Candidates.Length == 0)
-                    {
-                        Console.WriteLine("No one identified");
-                    }
-                    else
-                    {
-                        // Get top 1 among all candidates returned
-                        var candidateId = identifyResult.Candidates[0].PersonId;
-                        var person = await faceServiceClient.GetPersonAsync(personGroupId, candidateId);
-                        Console.WriteLine("Identified as {0}", person.Name);
-                    }
-                }
-            }
-
-
-        }
-        */
-
+        
+        //Generate an button click event for browsing photos and detect the faces in browsed photo.
         private async void button_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var openDlg = new Microsoft.Win32.OpenFileDialog();
@@ -300,6 +224,8 @@ namespace WpfApp1
 
         }
 
+
+
         private async Task<FaceRectangle[]> UploadAndDetectFaces(string imageFilePath)
         {
             try
@@ -317,22 +243,19 @@ namespace WpfApp1
             }
         }
 
-
-       
-
         
-       /* private void button1_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            webcam.Start();
-        }
-        */
+        //Create a Start button for starting a web cam
         private void button1_Click(object sender, RoutedEventArgs e)
         {
             webcam.Start();
         }
 
+
+        //Generate a Button click event to capture a photo then save a photo as well as detect the 
+        //faces in captured image and mark them as rectangle.
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
+            //save the file as test1.jpg
             FacePhoto.Source = captureImage.Source;
             Helper.SaveImageCapture((BitmapSource)FacePhoto.Source);
 
@@ -349,7 +272,8 @@ namespace WpfApp1
             bitmapSource.EndInit();
 
             FacePhoto.Source = bitmapSource;
-
+            
+            //face detection is starting.
             Title = "Detecting...";
             FaceRectangle[] faceRects = await UploadAndDetectFaces(filePath);
             Title = String.Format("Detection Finished. {0} face(s) detected", faceRects.Length);
@@ -390,6 +314,9 @@ namespace WpfApp1
             }
         }
 
+
+        
+        //Generate a button click event to identify the faces in captured image.
         private async void Button_Click_1(object sender, RoutedEventArgs e)
         {
             // Helper.SaveImageCapture((BitmapSource)captureImage.Source);
@@ -415,12 +342,10 @@ namespace WpfApp1
             }
             catch (FaceAPIException ex)
             {
-                //MainWindow.Log("Response: {0}. {1}", ex.ErrorCode, ex.ErrorMessage);
                 Title = String.Format("Response: {0}. {1}", ex.ErrorCode, ex.ErrorMessage);
             }
 
             Title = "Identifing....";
-            //string testImageFile = @"D:\Pictures\detection2.jpg";
             string getDirectory = Directory.GetCurrentDirectory();
             string testImageFile = getDirectory + "\\test1.jpg";
             using (Stream s = File.OpenRead(testImageFile))
@@ -433,7 +358,7 @@ namespace WpfApp1
 
                     foreach (var identifyResult in results)
                     {
-                        //Console.WriteLine("Result of face: {0}", identifyResult.FaceId);
+                        Console.WriteLine("Result of face: {0}", identifyResult.FaceId);
                         Title = String.Format("Result of face: {0}", identifyResult.FaceId);
 
                         if (identifyResult.Candidates.Length == 0)
@@ -446,7 +371,7 @@ namespace WpfApp1
                             // Get top 1 among all candidates returned
                             var candidateId = identifyResult.Candidates[0].PersonId;
                             var person = await faceServiceClient.GetPersonAsync(personGroupId, candidateId);
-                            //Console.WriteLine("Identified as {0}", person.Name);
+                            Console.WriteLine("Identified as {0}", person.Name);
                             Title = String.Format("Identified as {0}", person.Name);
                         }
                     }
