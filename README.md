@@ -1,4 +1,5 @@
-# Face-Detect-Recognition
+# Face-Detection-And-Identification
+
 It is a WPF C# project through this we can detect faces and also identify the faces. 
 
 In this project we are trying to detect and identify faces through web cam capturing.
